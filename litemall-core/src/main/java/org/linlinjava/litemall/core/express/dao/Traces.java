@@ -18,6 +18,24 @@ public class Traces {
     @JsonProperty("AcceptTime")
     private String AcceptTime;
 
+//    @JSONField(name="status")
+    private String status;
+
+
+//    @JSONField(name="time")
+    private String time;
+
+
+    public void setStatus(String status) {
+        this.AcceptStation = status;
+    }
+
+
+    public void setTime(String time) {
+        this.AcceptTime = time;
+    }
+
+
     public String getAcceptStation() {
         return AcceptStation;
     }

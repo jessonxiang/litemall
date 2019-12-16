@@ -1,10 +1,12 @@
-package org.linlinjava.litemall.core.express;
+package org.linlinjava.litemall.core.express.service.impl;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.linlinjava.litemall.core.express.config.ExpressProperties;
+import org.linlinjava.litemall.core.express.config.ExpressProperties.Kdniao;
 import org.linlinjava.litemall.core.express.dao.ExpressInfo;
+import org.linlinjava.litemall.core.express.service.IExpressService;
 import org.linlinjava.litemall.core.util.HttpUtil;
 import org.springframework.util.Base64Utils;
 
@@ -18,20 +20,19 @@ import java.util.Map;
  * <p>
  * 快递鸟即时查询API http://www.kdniao.com/api-track
  */
-public class ExpressService {
+public class KdniaoExpressServiceImpl implements IExpressService {
 
-    private final Log logger = LogFactory.getLog(ExpressService.class);
+    private final Log logger = LogFactory.getLog(KdniaoExpressServiceImpl.class);
     //请求url
     private String ReqURL = "http://api.kdniao.com/Ebusiness/EbusinessOrderHandle.aspx";
 
-    private ExpressProperties properties;
+    private Kdniao properties;
 
-    public ExpressProperties getProperties() {
-        return properties;
-    }
+    private ExpressProperties expressProperties;
 
     public void setProperties(ExpressProperties properties) {
-        this.properties = properties;
+        this.properties = properties.getKdniao();
+        this.expressProperties = properties;
     }
 
     /**
@@ -40,12 +41,18 @@ public class ExpressService {
      * @param vendorCode
      * @return
      */
-    public String getVendorName(String vendorCode) {
+    private String getVendorName(String vendorCode) {
+        return getVendorNames().get(vendorCode);
+    }
+
+
+    @Override
+    public Map<String, String> getVendorNames() {
+        Map<String, String> map = new HashMap<>();
         for (Map<String, String> item : properties.getVendors()) {
-            if (item.get("code").equals(vendorCode))
-                return item.get("name");
+            map.put(item.get("code"),item.get("name"));
         }
-        return null;
+        return map;
     }
 
     /**
@@ -75,7 +82,7 @@ public class ExpressService {
      * @throws Exception
      */
     private String getOrderTracesByJson(String expCode, String expNo) throws Exception {
-        if (!properties.isEnable()) {
+        if (!expressProperties.isEnable()) {
             return null;
         }
 
@@ -90,8 +97,6 @@ public class ExpressService {
         params.put("DataType", "2");
 
         String result = HttpUtil.sendPost(ReqURL, params);
-
-        //根据公司业务处理返回的信息......
 
         return result;
     }
